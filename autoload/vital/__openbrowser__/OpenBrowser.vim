@@ -469,20 +469,17 @@ endfunction
 function! s:_extract_urls(text, config) abort
   let allowed_schemes = a:config.get('allowed_schemes')
   let schemes = copy(allowed_schemes) + keys(a:config.get('fix_schemes'))
+  let pattern_set = s:_get_loose_pattern_set()
   if !empty(allowed_schemes)
     let head_pattern = s:_get_url_scheme_pattern(schemes)
-    let options = {
-          \ 'head_pattern': head_pattern,
-          \}
   else
-    " When allowed_schemes is empty, match any URI.
-    let pattern_set = s:_get_loose_pattern_set()
+    " When allowed_schemes is empty, use more tolerant pattern.
     let head_pattern = s:_get_url_head_pattern(schemes, pattern_set)
-    let options = {
-          \ 'uri_pattern_set': pattern_set,
-          \ 'head_pattern': head_pattern,
-          \}
   endif
+  let options = {
+        \ 'uri_pattern_set': pattern_set,
+        \ 'head_pattern': head_pattern,
+        \}
   let extracted = s:URIExtractor.extract_from_text(a:text, options)
   return map(extracted, "substitute(v:val.url.to_string(), '\\.$', '', '')")
 endfunction
